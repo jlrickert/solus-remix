@@ -1,3 +1,4 @@
+import * as TE from "fp-ts/lib/TaskEither";
 import type {
   ActionFunction,
   LoaderFunction,
@@ -10,9 +11,10 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { forceRun } from "~/vendor/prisma";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
+  const userId = await getUserId(request)();
   if (userId) return redirect("/");
   return json({});
 };
@@ -52,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await verifyLogin(email, password);
+  const user = await forceRun(verifyLogin(email, password));
 
   if (!user) {
     return json<ActionData>(
@@ -66,7 +68,7 @@ export const action: ActionFunction = async ({ request }) => {
     userId: user.id,
     remember: remember === "on" ? true : false,
     redirectTo,
-  });
+  })();
 };
 
 export const meta: MetaFunction = () => {

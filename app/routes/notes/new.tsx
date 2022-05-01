@@ -5,16 +5,17 @@ import * as React from "react";
 
 import { createNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
+import { forceRun } from "~/vendor/prisma";
 
-type ActionData = {
+type ActionData = Readonly<{
   errors?: {
     title?: string;
     body?: string;
   };
-};
+}>;
 
 export const action: ActionFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
+  const userId = await forceRun(requireUserId(request));
 
   const formData = await request.formData();
   const title = formData.get("title");
@@ -34,7 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const note = await createNote({ title, body, userId });
+  const note = await forceRun(createNote({ title, body, userId }));
 
   return redirect(`/notes/${note.id}`);
 };

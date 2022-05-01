@@ -1,3 +1,5 @@
+import * as TE from "fp-ts/lib/TaskEither";
+import { pipe } from "fp-ts/lib/function";
 import type {
   LinksFunction,
   LoaderFunction,
@@ -13,6 +15,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
+import type { User } from "~/vendor/prisma";
+
 import tailwindStylesheetUrl from "./styles/tailwind.css";
 import { getUser } from "./session.server";
 
@@ -27,12 +31,18 @@ export const meta: MetaFunction = () => ({
 });
 
 type LoaderData = {
-  user: Awaited<ReturnType<typeof getUser>>;
+  user: User | null;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
+  const runTask = pipe(
+    getUser(request),
+    TE.getOrElse((reason) => {
+      throw reason;
+    })
+  );
   return json<LoaderData>({
-    user: await getUser(request),
+    user: await runTask(),
   });
 };
 

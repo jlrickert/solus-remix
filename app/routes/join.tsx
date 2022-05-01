@@ -11,19 +11,22 @@ import { getUserId, createUserSession } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { forceRun } from "~/vendor/prisma";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  const userId = await getUserId(request)();
+  if (userId) {
+    return redirect("/");
+  }
   return json({});
 };
 
-interface ActionData {
+type ActionData = Readonly<{
   errors: {
     email?: string;
     password?: string;
   };
-}
+}>;
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -52,7 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const existingUser = await getUserByEmail(email);
+  const existingUser = await forceRun(getUserByEmail(email));
   if (existingUser) {
     return json<ActionData>(
       { errors: { email: "A user already exists with this email" } },
@@ -60,7 +63,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await createUser(email, password);
+  const user = await forceRun(createUser(email, password));
 
   return createUserSession({
     request,

@@ -4,15 +4,17 @@ import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
+import type { Note } from "~/models/note.server";
 import { getNoteListItems } from "~/models/note.server";
+import { forceRun } from "~/vendor/prisma";
 
 type LoaderData = {
-  noteListItems: Awaited<ReturnType<typeof getNoteListItems>>;
+  noteListItems: readonly Pick<Note, "id" | "title">[];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await requireUserId(request);
-  const noteListItems = await getNoteListItems({ userId });
+  const userId = await forceRun(requireUserId(request));
+  const noteListItems = await forceRun(getNoteListItems({ userId }));
   return json<LoaderData>({ noteListItems });
 };
 

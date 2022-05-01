@@ -1,62 +1,93 @@
-import type { Password, User } from "@prisma/client";
+import * as TE from "fp-ts/lib/TaskEither";
+import type * as Func from "fp-ts/lib/function";
+import type { Password, User, PrismaError } from "~/vendor/prisma";
+import { isPrismaError, convertToTaskEither } from "~/vendor/prisma";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "~/db.server";
 
-export type { User } from "@prisma/client";
+export { User };
 
-export async function getUserById(id: User["id"]) {
-  return prisma.user.findUnique({ where: { id } });
+function convert<A>(f: Func.Lazy<Promise<A>>): TE.TaskEither<PrismaError, A> {
+  return TE.tryCatch(f, (reason) => {
+    if (isPrismaError(reason)) {
+      return reason;
+    }
+    throw reason;
+  });
 }
 
-export async function getUserByEmail(email: User["email"]) {
-  return prisma.user.findUnique({ where: { email } });
+export function getUserById(
+  id: User["id"]
+): TE.TaskEither<PrismaError, User | null> {
+  return convert(() => prisma.user.findUnique({ where: { id } }));
 }
 
-export async function createUser(email: User["email"], password: string) {
-  const hashedPassword = await bcrypt.hash(password, 10);
+export function getUserByEmail(
+  email: User["email"]
+): TE.TaskEither<PrismaError, User | null> {
+  return convertToTaskEither(() =>
+    prisma.user.findUnique({ where: { email } })
+  );
+}
 
-  return prisma.user.create({
-    data: {
-      email,
-      password: {
-        create: {
-          hash: hashedPassword,
+export function createUser(
+  email: User["email"],
+  password: string
+): TE.TaskEither<PrismaError, User> {
+  return convertToTaskEither(async () => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    return prisma.user.create({
+      data: {
+        email,
+        password: {
+          create: {
+            hash: hashedPassword,
+          },
         },
       },
-    },
+    });
   });
 }
 
-export async function deleteUserByEmail(email: User["email"]) {
-  return prisma.user.delete({ where: { email } });
+export function userCount(): TE.TaskEither<PrismaError, number> {
+  return convertToTaskEither(() => prisma.user.count());
 }
 
-export async function verifyLogin(
+export function deleteUserByEmail(
+  email: User["email"]
+): TE.TaskEither<PrismaError, User> {
+  return convertToTaskEither(() => prisma.user.delete({ where: { email } }));
+}
+
+export function verifyLogin(
   email: User["email"],
   password: Password["hash"]
-) {
-  const userWithPassword = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      password: true,
-    },
+): TE.TaskEither<PrismaError, User | null> {
+  return convertToTaskEither(async () => {
+    const userWithPassword = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        password: true,
+      },
+    });
+
+    if (!userWithPassword || !userWithPassword.password) {
+      return null;
+    }
+
+    const isValid = await bcrypt.compare(
+      password,
+      userWithPassword.password.hash
+    );
+
+    if (!isValid) {
+      return null;
+    }
+
+    const { password: _password, ...userWithoutPassword } = userWithPassword;
+
+    return userWithoutPassword;
   });
-
-  if (!userWithPassword || !userWithPassword.password) {
-    return null;
-  }
-
-  const isValid = await bcrypt.compare(
-    password,
-    userWithPassword.password.hash
-  );
-
-  if (!isValid) {
-    return null;
-  }
-
-  const { password: _password, ...userWithoutPassword } = userWithPassword;
-
-  return userWithoutPassword;
 }
