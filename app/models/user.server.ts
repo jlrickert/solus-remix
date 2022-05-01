@@ -51,6 +51,12 @@ export function createUser(
   });
 }
 
+export function deleteUser(email: string): TE.TaskEither<PrismaError, void> {
+  return convertToTaskEither(() =>
+    prisma.user.delete({ where: { email } }).then((a) => {})
+  );
+}
+
 export function userCount(): TE.TaskEither<PrismaError, number> {
   return convertToTaskEither(() => prisma.user.count());
 }
