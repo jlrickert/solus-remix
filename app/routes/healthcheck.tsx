@@ -1,9 +1,8 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
-import * as TE from "fp-ts/lib/TaskEither";
 import type { LoaderFunction } from "@remix-run/node";
 
 import { userCount } from "~/models/user.server";
-import { pipe } from "fp-ts/lib/function";
+import { forceRun } from "~/vendor/prisma";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const host =
@@ -14,12 +13,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     // if we can connect to the database and make a simple query
     // and make a HEAD request to ourselves, then we're good.
     await Promise.all([
-      await pipe(
-        userCount(),
-        TE.getOrElse((reason) => {
-          throw reason;
-        })
-      )(),
+      await forceRun(userCount()),
       fetch(url.toString(), { method: "HEAD" }).then((r) => {
         if (!r.ok) return Promise.reject(r);
       }),
