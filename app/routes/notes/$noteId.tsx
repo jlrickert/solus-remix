@@ -7,16 +7,17 @@ import type { Note } from "~/models/note.server";
 import { deleteNote } from "~/models/note.server";
 import { getNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
+import { forceRun } from "~/vendor/prisma";
 
 type LoaderData = {
   note: Note;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-  const userId = await requireUserId(request);
+  const userId = await forceRun(requireUserId(request));
   invariant(params.noteId, "noteId not found");
 
-  const note = await getNote({ userId, id: params.noteId });
+  const note = await forceRun(getNote({ userId, id: params.noteId }));
   if (!note) {
     throw new Response("Not Found", { status: 404 });
   }
@@ -24,10 +25,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
-  const userId = await requireUserId(request);
+  const userId = await forceRun(requireUserId(request));
   invariant(params.noteId, "noteId not found");
 
-  await deleteNote({ userId, id: params.noteId });
+  await forceRun(deleteNote({ userId, id: params.noteId }));
 
   return redirect("/notes");
 };
