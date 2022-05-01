@@ -70,7 +70,7 @@ export const action: ActionFunction = async ({ request }) => {
     userId: user.id,
     remember: false,
     redirectTo,
-  });
+  })();
 };
 
 export const meta: MetaFunction = () => {
