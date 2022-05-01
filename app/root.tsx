@@ -1,5 +1,6 @@
-import * as TE from "fp-ts/lib/TaskEither";
-import { pipe } from "fp-ts/lib/function";
+import { useEffect, useState } from "react";
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import type {
   LinksFunction,
   LoaderFunction,
@@ -15,10 +16,11 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import type { User } from "~/vendor/prisma";
-
-import tailwindStylesheetUrl from "./styles/tailwind.css";
-import { getUser } from "./session.server";
+import { forceRun } from "~/vendor/prisma";
+import type { User } from "~/models/user.server";
+import { getUser } from "~/session.server";
+import { StoreProvider, createStore } from "~/store";
+import tailwindStylesheetUrl from "~/styles/tailwind.css";
 
 export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -26,27 +28,41 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Notes",
+  title: "Solus",
   viewport: "width=device-width,initial-scale=1",
 });
 
-type LoaderData = {
+type LoaderData = Readonly<{
   user: User | null;
-};
+}>;
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const runTask = pipe(
-    getUser(request),
-    TE.getOrElse((reason) => {
-      throw reason;
-    })
-  );
   return json<LoaderData>({
-    user: await runTask(),
+    user: await forceRun(getUser(request)),
   });
 };
 
 export default function App() {
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const socket = io();
+    setSocket(socket);
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+    socket.on("confirmation", (data) => {
+      console.log(data);
+    });
+  }, [socket]);
+
   return (
     <html lang="en" className="h-full">
       <head>
@@ -54,7 +70,11 @@ export default function App() {
         <Links />
       </head>
       <body className="h-full">
-        <Outlet />
+        {!!socket && (
+          <StoreProvider createStore={() => createStore({ socket })}>
+            <Outlet />
+          </StoreProvider>
+        )}
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
