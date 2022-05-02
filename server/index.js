@@ -34,7 +34,8 @@ io.on("connection", (socket) => {
 
   socket.on("event", (data) => {
     console.log(socket.id, data);
-    socket.emit("event", "pong");
+    socket.emit("event", "pong back to source");
+    socket.broadcast.emit("event", "pong");
   });
 });
 
