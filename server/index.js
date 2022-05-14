@@ -1,11 +1,11 @@
 const path = require("path");
 const express = require("express");
 const { createServer } = require("http");
-const { Server } = require("socket.io");
 const compression = require("compression");
 const morgan = require("morgan");
 const fs = require("fs");
 const { createRequestHandler } = require("@remix-run/express");
+const { realtime } = require("../app/Realtime");
 
 const MODE = process.env.NODE_ENV;
 const BUILD_DIR = path.join(process.cwd(), "server/build");
@@ -21,23 +21,8 @@ const app = express();
 // You need to create the HTTP server from the Express app
 const httpServer = createServer(app);
 
-// And then attach the socket.io server to the HTTP server
-const io = new Server(httpServer);
-
-// Then you can use `io` to listen the `connection` event and get a socket
-// from a client
-io.on("connection", (socket) => {
-  // from this point you are on the WS connection with a specific client
-  console.log(socket.id, "connected");
-
-  socket.emit("confirmation", "connected!");
-
-  socket.on("event", (data) => {
-    console.log(socket.id, data);
-    socket.emit("event", "pong back to source");
-    socket.broadcast.emit("event", "pong");
-  });
-});
+// Attach the realtime server to the HTTP server and run the side effect
+realtime(httpServer)();
 
 app.use(compression());
 
