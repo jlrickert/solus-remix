@@ -6,10 +6,10 @@ import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
-import type { User } from "~/models/user.server";
-import { getUserById } from "~/models/user.server";
-import type { PrismaError } from "~/vendor/prisma";
-import { isPrismaError } from "~/vendor/prisma";
+import type { User } from "~/models/User.server";
+import { getUserById } from "~/models/User.server";
+import type { PrismaError } from "~/vendor/Prisma";
+import { isPrismaError } from "~/vendor/Prisma";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 

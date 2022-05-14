@@ -5,7 +5,7 @@ import create from "zustand";
 import createContext from "zustand/context";
 import { redux, devtools } from "zustand/middleware";
 
-import type { User } from "~/models/user.server";
+import type { User } from "~/models/User.server";
 
 const { Provider, useStore } =
   createContext<

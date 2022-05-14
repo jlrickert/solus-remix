@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSocket } from "~/store";
+import { useSocket } from "~/Store";
 
 export default function Index() {
   const socket = useSocket();

@@ -7,10 +7,10 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
-import { createUserSession, getUserId } from "~/session.server";
-import { verifyLogin } from "~/models/user.server";
-import { safeRedirect, validateEmail } from "~/utils";
-import { forceRun } from "~/vendor/prisma";
+import { createUserSession, getUserId } from "~/Session.server";
+import { verifyLogin } from "~/models/User.server";
+import { safeRedirect, validateEmail } from "~/Utils";
+import { forceRun } from "~/vendor/Prisma";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request)();

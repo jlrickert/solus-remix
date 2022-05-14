@@ -2,11 +2,11 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
-import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
-import type { Note } from "~/models/note.server";
-import { getNoteListItems } from "~/models/note.server";
-import { forceRun } from "~/vendor/prisma";
+import { requireUserId } from "~/Session.server";
+import { useUser } from "~/Utils";
+import type { Note } from "~/models/Note.server";
+import { getNoteListItems } from "~/models/Note.server";
+import { forceRun } from "~/vendor/Prisma";
 
 type LoaderData = {
   noteListItems: readonly Pick<Note, "id" | "title">[];

@@ -3,11 +3,11 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useCatch, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
-import type { Note } from "~/models/note.server";
-import { deleteNote } from "~/models/note.server";
-import { getNote } from "~/models/note.server";
-import { requireUserId } from "~/session.server";
-import { forceRun } from "~/vendor/prisma";
+import type { Note } from "~/models/Note.server";
+import { deleteNote } from "~/models/Note.server";
+import { getNote } from "~/models/Note.server";
+import { requireUserId } from "~/Session.server";
+import { forceRun } from "~/vendor/Prisma";
 
 type LoaderData = {
   note: Note;

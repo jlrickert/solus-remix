@@ -1,9 +1,9 @@
 import * as TE from "fp-ts/lib/TaskEither";
 import { pipe } from "fp-ts/lib/function";
 
-import { prisma } from "~/db.server";
-import type { PrismaError, Note, User } from "~/vendor/prisma";
-import { convertToTaskEither } from "~/vendor/prisma";
+import { prisma } from "~/DB.server";
+import type { PrismaError, Note, User } from "~/vendor/Prisma";
+import { convertToTaskEither } from "~/vendor/Prisma";
 
 export { Note };
 

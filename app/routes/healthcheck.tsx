@@ -1,8 +1,8 @@
 // learn more: https://fly.io/docs/reference/configuration/#services-http_checks
 import type { LoaderFunction } from "@remix-run/node";
 
-import { userCount } from "~/models/user.server";
-import { forceRun } from "~/vendor/prisma";
+import { userCount } from "~/models/User.server";
+import { forceRun } from "~/vendor/Prisma";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const host =

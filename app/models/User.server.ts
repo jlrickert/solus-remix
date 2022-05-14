@@ -1,10 +1,10 @@
 import * as TE from "fp-ts/lib/TaskEither";
 import type * as Func from "fp-ts/lib/function";
-import type { Password, User, PrismaError } from "~/vendor/prisma";
-import { isPrismaError, convertToTaskEither } from "~/vendor/prisma";
+import type { Password, User, PrismaError } from "~/vendor/Prisma";
+import { isPrismaError, convertToTaskEither } from "~/vendor/Prisma";
 import bcrypt from "bcryptjs";
 
-import { prisma } from "~/db.server";
+import { prisma } from "~/DB.server";
 
 export { User };
 

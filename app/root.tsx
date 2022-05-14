@@ -16,10 +16,10 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-import { forceRun } from "~/vendor/prisma";
-import type { User } from "~/models/user.server";
-import { getUser } from "~/session.server";
-import { StoreProvider, createStore } from "~/store";
+import { forceRun } from "~/vendor/Prisma";
+import type { User } from "~/models/User.server";
+import { getUser } from "~/Session.server";
+import { StoreProvider, createStore } from "~/Store";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 
 export const links: LinksFunction = () => {
