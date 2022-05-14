@@ -1,19 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, StrictMode } from "react";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 import type {
-  LinksFunction,
-  LoaderFunction,
-  MetaFunction,
+    LinksFunction,
+    LoaderFunction,
+    MetaFunction,
 } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
+    Links,
+    LiveReload,
+    Meta,
+    Outlet,
+    Scripts,
+    ScrollRestoration,
 } from "@remix-run/react";
 
 import { forceRun } from "~/vendor/Prisma";
@@ -23,62 +23,66 @@ import { StoreProvider, createStore } from "~/Store";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 
 export const links: LinksFunction = () => {
-  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
+    return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
 };
 
 export const meta: MetaFunction = () => ({
-  charset: "utf-8",
-  title: "Solus",
-  viewport: "width=device-width,initial-scale=1",
+    charset: "utf-8",
+    title: "Solus",
+    viewport: "width=device-width,initial-scale=1",
 });
 
 type LoaderData = Readonly<{
-  user: User | null;
+    user: User | null;
 }>;
 
 export const loader: LoaderFunction = async ({ request }) => {
-  return json<LoaderData>({
-    user: await forceRun(getUser(request)),
-  });
+    return json<LoaderData>({
+        user: await forceRun(getUser(request)),
+    });
 };
 
 export default function App() {
-  const [socket, setSocket] = useState<Socket | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    const socket = io();
-    setSocket(socket);
+    useEffect(() => {
+        const socket = io();
+        setSocket(socket);
 
-    return () => {
-      socket.close();
-    };
-  }, []);
+        return () => {
+            socket.close();
+        };
+    }, []);
 
-  useEffect(() => {
-    if (!socket) {
-      return;
-    }
-    socket.on("confirmation", (data) => {
-      console.log(data);
-    });
-  }, [socket]);
+    useEffect(() => {
+        if (!socket) {
+            return;
+        }
+        socket.on("confirmation", (data) => {
+            console.log(data);
+        });
+    }, [socket]);
 
-  return (
-    <html lang="en" className="h-full">
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body className="h-full">
-        {!!socket && (
-          <StoreProvider createStore={() => createStore({ socket })}>
-            <Outlet />
-          </StoreProvider>
-        )}
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en" className="h-full">
+            <head>
+                <Meta />
+                <Links />
+            </head>
+            <body className="h-full">
+                <StrictMode>
+                    {!!socket && (
+                        <StoreProvider
+                            createStore={() => createStore({ socket })}
+                        >
+                            <Outlet />
+                        </StoreProvider>
+                    )}
+                </StrictMode>
+                <ScrollRestoration />
+                <Scripts />
+                <LiveReload />
+            </body>
+        </html>
+    );
 }
