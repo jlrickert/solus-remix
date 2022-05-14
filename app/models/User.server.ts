@@ -4,7 +4,7 @@ import type { Password, User, PrismaError } from "~/vendor/Prisma";
 import { isPrismaError, convertToTaskEither } from "~/vendor/Prisma";
 import bcrypt from "bcryptjs";
 
-import { prisma } from "~/DB.server";
+import { prisma } from "~/db.server";
 
 export { User };
 
