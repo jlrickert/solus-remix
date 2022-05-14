@@ -4,8 +4,8 @@
 // and that user will get deleted
 
 import { installGlobals } from "@remix-run/node/globals";
-import { deleteUser as prismaDeleteUser } from "~/models/user.server";
-import { forceRun } from "~/vendor/prisma";
+import { deleteUser as prismaDeleteUser } from "~/models/User.server";
+import { forceRun } from "~/vendor/Prisma";
 
 installGlobals();
 

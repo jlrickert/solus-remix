@@ -6,9 +6,9 @@
 
 import { parse } from "cookie";
 import { installGlobals } from "@remix-run/node/globals";
-import { createUserSession } from "~/session.server";
-import { createUser } from "~/models/user.server";
-import { forceRun } from "~/vendor/prisma";
+import { createUserSession } from "~/Session.server";
+import { createUser } from "~/models/User.server";
+import { forceRun } from "~/vendor/Prisma";
 
 installGlobals();
 
