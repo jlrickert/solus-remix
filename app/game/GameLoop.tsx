@@ -1,4 +1,3 @@
-import { pipe } from "fp-ts/lib/function";
 import * as React from "react";
 import { CanvasProvider } from "./CanvasContext";
 
