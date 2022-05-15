@@ -10,14 +10,14 @@ import { forceRun } from "~/vendor/Prisma";
 installGlobals();
 
 async function deleteUser(email: string) {
-  if (!email) {
-    throw new Error("email required for login");
-  }
-  if (!email.endsWith("@example.com")) {
-    throw new Error("All test emails must end in @example.com");
-  }
+    if (!email) {
+        throw new Error("email required for login");
+    }
+    if (!email.endsWith("@example.com")) {
+        throw new Error("All test emails must end in @example.com");
+    }
 
-  await forceRun(prismaDeleteUser(email));
+    await forceRun(prismaDeleteUser(email));
 }
 
 deleteUser(process.argv[2]);
