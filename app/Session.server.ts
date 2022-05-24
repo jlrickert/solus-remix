@@ -68,7 +68,7 @@ export function getUser(
                 return user;
             }
 
-            throw await logout(request);
+            throw await logout(request)();
         },
         (reason) => {
             if (isPrismaError(reason)) {

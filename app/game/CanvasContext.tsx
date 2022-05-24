@@ -3,7 +3,6 @@ import invariant from "tiny-invariant";
 
 type GameCanvasState = {
     context: CanvasRenderingContext2D | null;
-    fps: React.MutableRefObject<number>;
 };
 const GameCanvas = React.createContext<GameCanvasState | null>(null);
 
@@ -19,11 +18,11 @@ export function useCanvasContext(): CanvasRenderingContext2D {
 export const CanvasProvider: React.FC<GameCanvasState> = ({
     children,
     context,
-    fps,
+    // fps,
 }) => {
     return (
         <GameCanvas.Provider
-            value={React.useMemo(() => ({ context, fps }), [context, fps])}
+            value={React.useMemo(() => ({ context }), [context])}
         >
             {children}
         </GameCanvas.Provider>

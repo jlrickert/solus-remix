@@ -6,6 +6,7 @@ import createContext from "zustand/context";
 import { redux, devtools } from "zustand/middleware";
 
 import type { User } from "~/models/User.server";
+import * as GameState from "./game/GameState";
 
 const { Provider, useStore } =
     createContext<
@@ -16,8 +17,11 @@ const { Provider, useStore } =
 
 export type GlobalState = Readonly<{
     socket: Socket | null;
+    game: GameState.GameState;
 }>;
 export type GlobalAction =
+    | { type: "TICK"; tick: number }
+    | { type: "RESYNC" }
     | {
           type: "CHAT_RECEIVE";
           messages: readonly string[];
@@ -28,12 +32,20 @@ export type GlobalAction =
           message: string;
       };
 
+export const tick = (tick: number): GlobalAction => {
+    return { type: "TICK", tick };
+};
+
 const reducer: Reducer<GlobalState, GlobalAction> = (state, action) => {
     return state;
 };
 
 export function createStore(deps: Readonly<{ socket: Socket }>) {
-    return create(devtools(redux(reducer, { socket: deps.socket })));
+    return create(
+        devtools(
+            redux(reducer, { socket: deps.socket, game: GameState.makeEmpty() })
+        )
+    );
 }
 
 export function useSocket(): Socket | null {
