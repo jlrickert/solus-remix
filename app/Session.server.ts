@@ -40,7 +40,7 @@ export function getUserId(request: Request): T.Task<string | null> {
         getSession,
         T.map((session) => session.get(USER_SESSION_KEY)),
         T.map((userId) => {
-            if (userId) {
+            if (userId && typeof userId === "string") {
                 return userId;
             }
             return null;
