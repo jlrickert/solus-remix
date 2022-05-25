@@ -21,6 +21,12 @@ async function seed() {
                     hash: hashedPassword,
                 },
             },
+            profile: {
+                create: {
+                    nickname: "raviko",
+                    theme: "system",
+                },
+            },
         },
     });
 
