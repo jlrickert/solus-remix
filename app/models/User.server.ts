@@ -1,26 +1,16 @@
-import * as TE from "fp-ts/lib/TaskEither";
-import type * as Func from "fp-ts/lib/function";
+import type * as TE from "fp-ts/lib/TaskEither";
 import type { Password, User, PrismaError } from "~/vendor/Prisma";
-import { isPrismaError, convertToTaskEither } from "~/vendor/Prisma";
+import { convertToTaskEither } from "~/vendor/Prisma";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "~/db.server";
 
 export { User };
 
-function convert<A>(f: Func.Lazy<Promise<A>>): TE.TaskEither<PrismaError, A> {
-    return TE.tryCatch(f, (reason) => {
-        if (isPrismaError(reason)) {
-            return reason;
-        }
-        throw reason;
-    });
-}
-
 export function getUserById(
     id: User["id"]
 ): TE.TaskEither<PrismaError, User | null> {
-    return convert(() => prisma.user.findUnique({ where: { id } }));
+    return convertToTaskEither(() => prisma.user.findUnique({ where: { id } }));
 }
 
 export function getUserByEmail(
@@ -44,6 +34,11 @@ export function createUser(
                 password: {
                     create: {
                         hash: hashedPassword,
+                    },
+                },
+                profile: {
+                    create: {
+                        theme: "system",
                     },
                 },
             },

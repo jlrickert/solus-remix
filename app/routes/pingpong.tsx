@@ -1,21 +1,21 @@
 import { useEffect } from "react";
-import { useSocket } from "~/Store";
+// import { useSocket } from "~/WebSocketContext";
 
 export default function Index() {
-    const socket = useSocket();
+    // const socket = useSocket();
 
-    console.log(socket);
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
+    // console.log(socket);
+    // useEffect(() => {
+    //     if (!socket) {
+    //         return;
+    //     }
 
-        socket.on("event", (data) => {
-            console.log(data);
-        });
+    //     socket.on("event", (data) => {
+    //         console.log(data);
+    //     });
 
-        socket.emit("event", "ping");
-    }, [socket]);
+    //     socket.emit("event", "ping");
+    // }, [socket]);
 
     return (
         <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.4" }}>
@@ -23,7 +23,9 @@ export default function Index() {
             <div>
                 <button
                     type="button"
-                    onClick={() => socket?.emit("event", "ping")}
+                    onClick={() => {
+                        // socket?.emit("event", "ping")
+                    }}
                 >
                     Send ping
                 </button>

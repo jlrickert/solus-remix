@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "Profile" (
     "nickname" TEXT,
-    "theme" TEXT NOT NULL DEFAULT 'system',
+    "theme" TEXT NOT NULL DEFAULT "system",
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "userId" TEXT NOT NULL,

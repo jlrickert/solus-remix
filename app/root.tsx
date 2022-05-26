@@ -1,6 +1,4 @@
-import { useEffect, useState, StrictMode } from "react";
-import type { Socket } from "socket.io-client";
-import { io } from "socket.io-client";
+import * as React from "react";
 import type {
     LinksFunction,
     LoaderFunction,
@@ -15,11 +13,12 @@ import {
     Scripts,
     ScrollRestoration,
 } from "@remix-run/react";
+import { Provider } from "react-redux";
 
 import { forceRun } from "~/vendor/Prisma";
 import type { User } from "~/models/User.server";
 import { getUser } from "~/Session.server";
-import { StoreProvider, createStore } from "~/Store";
+import { store } from "~/Store";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 
 export const links: LinksFunction = () => {
@@ -37,32 +36,31 @@ type LoaderData = Readonly<{
 }>;
 
 export const loader: LoaderFunction = async ({ request }) => {
+    const user = await forceRun(getUser(request));
     return json<LoaderData>({
-        user: await forceRun(getUser(request)),
+        user,
     });
 };
 
+// export function ErrorBoundary({ error }: any) {
+//     console.error(error);
+//     return (
+//         <html>
+//             <head>
+//                 <title>Oh no!</title>
+//                 <Meta />
+//                 <Links />
+//             </head>
+//             <body>
+//                 {/* add the UI you want your users to see */}
+//                 {JSON.stringify(error)}
+//                 <Scripts />
+//             </body>
+//         </html>
+//     );
+// }
+
 export default function App() {
-    const [socket, setSocket] = useState<Socket | null>(null);
-
-    useEffect(() => {
-        const socket = io();
-        setSocket(socket);
-
-        return () => {
-            socket.close();
-        };
-    }, []);
-
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
-        socket.on("confirmation", (data) => {
-            console.log(data);
-        });
-    }, [socket]);
-
     return (
         <html lang="en" className="h-full">
             <head>
@@ -70,18 +68,14 @@ export default function App() {
                 <Links />
             </head>
             <body className="h-full">
-                <StrictMode>
-                    {!!socket && (
-                        <StoreProvider
-                            createStore={() => createStore({ socket })}
-                        >
-                            <Outlet />
-                        </StoreProvider>
-                    )}
-                </StrictMode>
+                <React.StrictMode>
+                    <Provider store={store} serverState={store.getState()}>
+                        <Outlet />
+                    </Provider>
+                </React.StrictMode>
                 <ScrollRestoration />
-                <Scripts />
                 <LiveReload />
+                <Scripts />
             </body>
         </html>
     );

@@ -1,7 +1,9 @@
 import * as React from "react";
 import { CanvasProvider } from "./CanvasContext";
 
-export const GameLoop: React.FC = ({ children }) => {
+export const GameLoop: React.FC<Readonly<{ children: React.ReactNode }>> = ({
+    children,
+}) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = React.useState<CanvasRenderingContext2D | null>(null);
     const [isVisible, setIsVisible] = React.useState(false);

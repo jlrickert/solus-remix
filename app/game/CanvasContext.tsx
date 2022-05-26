@@ -16,11 +16,9 @@ export function useCanvasContext(): CanvasRenderingContext2D {
     return data.context;
 }
 
-export const CanvasProvider: React.FC<GameCanvasState> = ({
-    children,
-    context,
-    fps,
-}) => {
+export const CanvasProvider: React.FC<
+    React.PropsWithChildren<GameCanvasState>
+> = ({ children, context, fps }) => {
     return (
         <GameCanvas.Provider
             value={React.useMemo(() => ({ context, fps }), [context, fps])}
