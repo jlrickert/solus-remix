@@ -1,4 +1,6 @@
 import * as React from "react";
+import * as TE from "fp-ts/lib/TaskEither";
+import * as O from "fp-ts/lib/Option";
 import type {
     LinksFunction,
     LoaderFunction,
@@ -17,9 +19,12 @@ import { Provider } from "react-redux";
 
 import { forceRun } from "~/vendor/Prisma";
 import type { User } from "~/models/User.server";
+import type { Profile } from "~/features/profile/Profile";
 import { getUser } from "~/Session.server";
 import { store } from "~/Store";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
+import { getProfileById } from "./features/profile/Profile.server";
+import { pipe } from "fp-ts/lib/function";
 
 export const links: LinksFunction = () => {
     return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -33,12 +38,23 @@ export const meta: MetaFunction = () => ({
 
 type LoaderData = Readonly<{
     user: User | null;
+    profile: Profile | null;
 }>;
 
 export const loader: LoaderFunction = async ({ request }) => {
-    const user = await forceRun(getUser(request));
+    const t = O.traverse(TE.ApplicativeSeq);
+    const userTask = getUser(request);
+    const profileTask = pipe(
+        userTask,
+        TE.map((user) => O.fromNullable(user)),
+        TE.chainW(t((user) => getProfileById(user.id))),
+        TE.map((profile) => O.toNullable(profile))
+    );
+    const user = await forceRun(userTask);
+    const profile = await forceRun(profileTask);
     return json<LoaderData>({
         user,
+        profile,
     });
 };
 
@@ -68,11 +84,11 @@ export default function App() {
                 <Links />
             </head>
             <body className="h-full">
-                <React.StrictMode>
-                    <Provider store={store} serverState={store.getState()}>
+                <Provider store={store} serverState={store.getState()}>
+                    <React.StrictMode>
                         <Outlet />
-                    </Provider>
-                </React.StrictMode>
+                    </React.StrictMode>
+                </Provider>
                 <ScrollRestoration />
                 <LiveReload />
                 <Scripts />

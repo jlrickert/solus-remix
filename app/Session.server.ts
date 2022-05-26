@@ -7,7 +7,7 @@ import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/User.server";
-import { getUserById } from "~/models/User.server";
+import * as UserApi from "~/models/User.server";
 import type { PrismaError } from "~/vendor/Prisma";
 import { isPrismaError } from "~/vendor/Prisma";
 
@@ -59,7 +59,7 @@ export function getUser(
             }
 
             const user = await pipe(
-                getUserById(userId),
+                UserApi.getUserById(userId),
                 TE.getOrElse((error) => {
                     throw error;
                 })
@@ -106,7 +106,7 @@ export function requireUser(
     return pipe(
         request,
         requireUserId,
-        TE.chainW(getUserById),
+        TE.chainW(UserApi.getUserById),
         TE.chainW((user) => {
             return pipe(
                 user,

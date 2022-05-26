@@ -2,6 +2,8 @@ import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
 import type { User } from "~/models/User.server";
+import { isProfile } from "./features/profile/Profile";
+import type { Profile } from "./features/profile/Profile";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -64,6 +66,28 @@ export function useUser(): User {
         );
     }
     return maybeUser;
+}
+
+export function useOptionalProfile(): Profile | undefined {
+    const data = useMatchesData("root");
+    if (!data) {
+        return undefined;
+    }
+    const profile = data.profile;
+    if (isProfile(profile)) {
+        return profile;
+    }
+    return undefined;
+}
+
+export function useProfile(): Profile {
+    const maybeProfile = useOptionalProfile();
+    if (!maybeProfile) {
+        throw new Error(
+            "No profile found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
+        );
+    }
+    return maybeProfile;
 }
 
 export function validateEmail(email: unknown): email is string {
