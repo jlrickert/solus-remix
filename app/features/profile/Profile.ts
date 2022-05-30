@@ -1,12 +1,7 @@
-import * as T from "io-ts";
-import type * as TE from "fp-ts/lib/TaskEither";
-import type { User } from "~/models/User.server";
-import type { PrismaError, Profile } from "~/vendor/Prisma";
-import { convertToTaskEither } from "~/vendor/Prisma";
-import { prisma } from "~/db.server";
-import { pipe } from "fp-ts/lib/function";
+import * as T from "~/vendor/Codec";
+import type { Profile as PrismaProfile } from "~/vendor/Prisma";
 
-export { Profile };
+export type Profile = PrismaProfile & { theme: Theme };
 
 export type Theme = "system" | "light" | "dark";
 
@@ -14,7 +9,7 @@ function switchInvariant(value: never): boolean {
     return false;
 }
 
-export function isTheme(value: string): value is Theme {
+export function isTheme(value: unknown): value is Theme {
     const v = value as Theme;
     if (v === "dark") {
         return true;
@@ -27,11 +22,13 @@ export function isTheme(value: string): value is Theme {
     }
 }
 
-const date = new T.Type<Date, Date, unknown>(
-    "Date",
-    (u): u is Date => u instanceof Date,
+const themeC = new T.Type<Theme, string, unknown>(
+    "Theme",
+    (u): u is Theme => {
+        return typeof u === "string" && isTheme(u);
+    },
     (u, c) => {
-        if (u instanceof Date) {
+        if (typeof u === "string" && isTheme(u)) {
             return T.success(u);
         }
         return T.failure(u, c);
@@ -39,14 +36,16 @@ const date = new T.Type<Date, Date, unknown>(
     (a) => a
 );
 
-const codec = T.strict<Record<keyof Profile, T.Mixed>>({
+export const codec: T.Type<Profile> = T.strict<
+    Record<keyof PrismaProfile, T.Mixed>
+>({
     userId: T.string,
     nickname: T.union([T.null, T.string]),
-    theme: T.string,
-    createdAt: date,
-    updatedAt: date,
+    theme: themeC,
+    createdAt: T.date,
+    updatedAt: T.date,
 });
 
-export function isProfile(profile: unknown): profile is Profile {
+export function isProfile(profile: any): profile is Profile {
     return codec.is(profile);
 }

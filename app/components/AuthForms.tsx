@@ -2,29 +2,62 @@ import { Form, Link, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
 export type SignUpFormProps = Readonly<{
+    nicknameError: string | null;
     emailError: string | null;
     passwordError: string | null;
     redirectTo: string | null;
 }>;
+
 export const SignUpForm: React.FC<SignUpFormProps> = ({
+    nicknameError,
     emailError,
     passwordError,
     redirectTo,
 }) => {
     const [searchParams] = useSearchParams();
+    const nicknameRef = React.useRef<HTMLInputElement>(null);
     const emailRef = React.useRef<HTMLInputElement>(null);
     const passwordRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
-        if (emailError) {
+        if (nicknameError) {
+            nicknameRef.current?.focus();
+        } else if (emailError) {
             emailRef.current?.focus();
         } else if (passwordError) {
             passwordRef.current?.focus();
         }
-    }, [emailError, passwordError]);
+    }, [emailError, nicknameError, passwordError]);
 
     return (
         <Form method="post" action="/join" className="space-y-6">
+            <div>
+                <label
+                    htmlFor="nickname"
+                    className="block text-sm font-medium text-gray-700"
+                >
+                    Nickname
+                </label>
+                <div className="mt-1">
+                    <input
+                        ref={nicknameRef}
+                        id="nickname"
+                        required
+                        autoFocus={true}
+                        name="nickname"
+                        type="text"
+                        autoComplete="nickname"
+                        aria-invalid={nicknameError ? true : undefined}
+                        aria-describedby="email-error"
+                        className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+                    />
+                    {nicknameError && (
+                        <div className="pt-1 text-red-700" id="email-error">
+                            {nicknameError}
+                        </div>
+                    )}
+                </div>
+            </div>
             <div>
                 <label
                     htmlFor="email"

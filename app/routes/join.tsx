@@ -8,9 +8,9 @@ import { useActionData, useSearchParams } from "@remix-run/react";
 
 import { getUserId, createUserSession } from "~/Session.server";
 
-import { createUser, getUserByEmail } from "~/models/User.server";
+import * as UserRepo from "~/models/User.server";
 import { safeRedirect, validateEmail } from "~/Utils";
-import { forceRun } from "~/vendor/Prisma";
+import * as Prisma from "~/vendor/Prisma";
 import { SignUpForm } from "~/components/AuthForms";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -23,6 +23,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 type ActionData = Readonly<{
     errors?: Readonly<{
+        nickname: string | null;
         email: string | null;
         password: string | null;
     }>;
@@ -30,45 +31,96 @@ type ActionData = Readonly<{
 
 export const action: ActionFunction = async ({ request }) => {
     const formData = await request.formData();
+    const nickname = formData.get("nickname");
     const email = formData.get("email");
     const password = formData.get("password");
     const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
-    if (!validateEmail(email)) {
-        return json<ActionData>(
-            { errors: { email: "Email is invalid", password: null } },
-            { status: 400 }
-        );
-    }
-
-    if (typeof password !== "string") {
-        return json<ActionData>(
-            { errors: { password: "Password is required", email: null } },
-            { status: 400 }
-        );
-    }
-
-    if (password.length < 8) {
-        return json<ActionData>(
-            { errors: { password: "Password is too short", email: null } },
-            { status: 400 }
-        );
-    }
-
-    const existingUser = await forceRun(getUserByEmail(email));
-    if (existingUser) {
+    console.log(nickname);
+    if (typeof nickname !== "string") {
         return json<ActionData>(
             {
                 errors: {
+                    nickname: "Nickname is required",
+                    email: null,
                     password: null,
-                    email: "A user already exists with this email",
                 },
             },
             { status: 400 }
         );
     }
 
-    const user = await forceRun(createUser(email, password));
+    if (!validateEmail(email)) {
+        return json<ActionData>(
+            {
+                errors: {
+                    nickname: null,
+                    email: "Email is invalid",
+                    password: null,
+                },
+            },
+            { status: 400 }
+        );
+    }
+
+    if (typeof password !== "string") {
+        return json<ActionData>(
+            {
+                errors: {
+                    nickname: null,
+                    email: null,
+                    password: "Password is required",
+                },
+            },
+            { status: 400 }
+        );
+    }
+
+    if (password.length < 8) {
+        return json<ActionData>(
+            {
+                errors: {
+                    nickname: null,
+                    email: null,
+                    password: "Password is too short",
+                },
+            },
+            { status: 400 }
+        );
+    }
+
+    const existingEmail = await Prisma.forceRun(UserRepo.getUserByEmail(email));
+    if (existingEmail) {
+        return json<ActionData>(
+            {
+                errors: {
+                    password: null,
+                    nickname: null,
+                    email: "A user already exists with this email",
+                },
+            },
+            { status: 400 }
+        );
+    }
+    const existingProfile = await Prisma.forceRun(
+        UserRepo.getUserByNickname(nickname)
+    );
+    if (existingProfile) {
+        return json<ActionData>(
+            {
+                errors: {
+                    password: null,
+                    nickname: "A user already exists with this nickname",
+                    email: null,
+                },
+            },
+            { status: 400 }
+        );
+    }
+
+    const user = await Prisma.forceRun(
+        UserRepo.createUser({ nickname, email, password })
+    );
 
     return createUserSession({
         request,
@@ -93,6 +145,7 @@ export default function Join() {
         <div className="flex min-h-full flex-col justify-center">
             <div className="mx-auto w-full max-w-md px-8">
                 <SignUpForm
+                    nicknameError={actionData?.errors?.nickname ?? null}
                     emailError={actionData?.errors?.email ?? null}
                     passwordError={actionData?.errors?.password ?? null}
                     redirectTo={redirectTo}
