@@ -84,11 +84,11 @@ export default function App() {
                 <Links />
             </head>
             <body className="h-full">
-                <Provider store={store} serverState={store.getState()}>
-                    <React.StrictMode>
+                <React.StrictMode>
+                    <Provider store={store} serverState={preloadedState}>
                         <Outlet />
-                    </React.StrictMode>
-                </Provider>
+                    </Provider>
+                </React.StrictMode>
                 <ScrollRestoration />
                 <LiveReload />
                 <Scripts />
