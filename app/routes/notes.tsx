@@ -3,7 +3,6 @@ import { json } from "@remix-run/node";
 import { Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
 import { requireUserId } from "~/Session.server";
-import { useUser } from "~/Utils";
 import type { Note } from "~/models/Note.server";
 import { getNoteListItems } from "~/models/Note.server";
 import { forceRun } from "~/vendor/Prisma";

@@ -6,8 +6,7 @@ import type { Session } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
-import type { User } from "~/models/User.server";
-import * as UserApi from "~/models/User.server";
+import * as UserRepo from "~/models/User.server";
 import type { PrismaError } from "~/vendor/Prisma";
 import { isPrismaError } from "~/vendor/Prisma";
 
@@ -50,7 +49,7 @@ export function getUserId(request: Request): T.Task<string | null> {
 
 export function getUser(
     request: Request
-): TE.TaskEither<PrismaError | Response, User | null> {
+): TE.TaskEither<PrismaError | Response, UserRepo.User | null> {
     return TE.tryCatch(
         async () => {
             const userId = await getUserId(request)();
@@ -59,7 +58,7 @@ export function getUser(
             }
 
             const user = await pipe(
-                UserApi.getUserById(userId),
+                UserRepo.getUserById(userId),
                 TE.getOrElse((error) => {
                     throw error;
                 })
@@ -102,11 +101,11 @@ export function requireUserId(
 
 export function requireUser(
     request: Request
-): TE.TaskEither<Response | PrismaError, User> {
+): TE.TaskEither<Response | PrismaError, UserRepo.User> {
     return pipe(
         request,
         requireUserId,
-        TE.chainW(UserApi.getUserById),
+        TE.chainW(UserRepo.getUserById),
         TE.chainW((user) => {
             return pipe(
                 user,

@@ -1,9 +1,12 @@
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
+import * as O from "fp-ts/lib/Option";
+import * as E from "fp-ts/lib/Either";
 
-import type { User } from "~/models/User.server";
-import { isProfile } from "./features/profile/Profile";
-import type { Profile } from "./features/profile/Profile";
+import type * as UserRepo from "~/models/User.server";
+import * as Profile from "~/features/profile/Profile";
+import invariant from "tiny-invariant";
+import { pipe } from "fp-ts/lib/function";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -46,11 +49,11 @@ export function useMatchesData(
     return route?.data;
 }
 
-function isUser(user: any): user is User {
+function isUser(user: any): user is UserRepo.User {
     return user && typeof user === "object" && typeof user.email === "string";
 }
 
-export function useOptionalUser(): User | undefined {
+export function useOptionalUser(): UserRepo.User | undefined {
     const data = useMatchesData("root");
     if (!data || !isUser(data.user)) {
         return undefined;
@@ -58,35 +61,32 @@ export function useOptionalUser(): User | undefined {
     return data.user;
 }
 
-export function useUser(): User {
+export function useUser(): UserRepo.User {
     const maybeUser = useOptionalUser();
-    if (!maybeUser) {
-        throw new Error(
-            "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
-        );
-    }
+    invariant(
+        maybeUser,
+        "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
+    );
     return maybeUser;
 }
 
-export function useOptionalProfile(): Profile | undefined {
+export function useOptionalProfile(): Profile.Profile | undefined {
     const data = useMatchesData("root");
-    if (!data) {
-        return undefined;
-    }
-    const profile = data.profile;
-    if (isProfile(profile)) {
-        return profile;
-    }
-    return undefined;
+    return pipe(
+        data,
+        O.fromNullable,
+        O.chain((data) => O.fromNullable(data.profile)),
+        O.map(Profile.fromJSON),
+        O.toUndefined
+    );
 }
 
-export function useProfile(): Profile {
+export function useProfile(): Profile.Profile {
     const maybeProfile = useOptionalProfile();
-    if (!maybeProfile) {
-        throw new Error(
-            "No profile found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
-        );
-    }
+    invariant(
+        maybeProfile,
+        "No profile found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
+    );
     return maybeProfile;
 }
 

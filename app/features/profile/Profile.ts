@@ -1,3 +1,7 @@
+import { pipe } from "fp-ts/lib/function";
+import * as E from "fp-ts/lib/Either";
+import invariant from "tiny-invariant";
+
 import * as T from "~/vendor/Codec";
 import type { Profile as PrismaProfile } from "~/vendor/Prisma";
 
@@ -22,30 +26,40 @@ export function isTheme(value: unknown): value is Theme {
     }
 }
 
-const themeC = new T.Type<Theme, string, unknown>(
-    "Theme",
-    (u): u is Theme => {
-        return typeof u === "string" && isTheme(u);
-    },
-    (u, c) => {
-        if (typeof u === "string" && isTheme(u)) {
-            return T.success(u);
-        }
-        return T.failure(u, c);
-    },
-    (a) => a
-);
-
-export const codec: T.Type<Profile> = T.strict<
+export const jsonCodec: T.Type<Profile> = T.strict<
     Record<keyof PrismaProfile, T.Mixed>
 >({
     userId: T.string,
     nickname: T.union([T.null, T.string]),
-    theme: themeC,
-    createdAt: T.date,
-    updatedAt: T.date,
+    theme: T.string,
+    createdAt: T.iso8601Date,
+    updatedAt: T.iso8601Date,
 });
 
-export function isProfile(profile: any): profile is Profile {
-    return codec.is(profile);
+export function isProfile(profile: unknown): profile is Profile {
+    return jsonCodec.is(profile);
 }
+
+export const fromPrisma = (profile: PrismaProfile): Profile => {
+    return {
+        ...profile,
+        theme: isTheme(profile.theme) ? profile.theme : "system",
+    };
+};
+
+export const fromJSON = (json: unknown): Profile => {
+    const data = pipe(json, jsonCodec.decode);
+    invariant(
+        E.isRight(data),
+        `Expected a valid profile: ${pipe(
+            json,
+            T.getErrorMessages(jsonCodec),
+            (message) => JSON.stringify(message, undefined, 2)
+        )}`
+    );
+    const profile = data.right;
+    return {
+        ...profile,
+        theme: isTheme(data.right.theme) ? profile.theme : "system",
+    };
+};

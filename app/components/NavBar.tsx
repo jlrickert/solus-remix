@@ -1,35 +1,52 @@
 import * as React from "react";
 import { Link } from "@remix-run/react";
 import { LogoutForm } from "./AuthForms";
-import { useOptionalUser } from "~/Utils";
+import { useOptionalProfile } from "~/Utils";
+import type { Profile } from "~/features/profile/Profile";
+import { LinkButton } from "./Core";
+
+const AuthenticatedBar: React.FC<
+    Readonly<{
+        profile: Profile;
+    }>
+> = (props) => {
+    return (
+        <>
+            <span>{props.profile.nickname}</span>
+            <LinkButton
+                to="/account"
+                className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
+            >
+                My Account
+            </LinkButton>
+            <LogoutForm />
+        </>
+    );
+};
+
+const UnauthenticatedBar: React.FC<Readonly<{}>> = (props) => {
+    return (
+        <>
+            <LinkButton to="/join">Sign up</LinkButton>
+            <LinkButton to="/login">Log In</LinkButton>
+        </>
+    );
+};
 
 export type MainNavBarProps = Readonly<{}>;
-
 export const MainNavBar: React.FC<MainNavBarProps> = () => {
-    const user = useOptionalUser();
+    const profile = useOptionalProfile();
+
     return (
-        <nav className="flex items-start justify-center bg-slate-800 p-4 text-white">
+        <nav className="mx-auto flex h-16 w-full items-center gap-8 bg-slate-800 px-4 text-white sm:px-6 lg:px-8">
             <h1 className="text-3xl font-bold">
                 <Link to="/">Solus</Link>
             </h1>
             <span className="flex-grow" />
-            {user ? (
-                <LogoutForm />
+            {profile ? (
+                <AuthenticatedBar profile={profile} />
             ) : (
-                <>
-                    <Link
-                        to="/join"
-                        className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
-                    >
-                        Sign up
-                    </Link>
-                    <Link
-                        to="/login"
-                        className="flex items-center justify-center rounded-md bg-yellow-500 px-4 py-3 font-medium text-white hover:bg-yellow-600"
-                    >
-                        Log In
-                    </Link>
-                </>
+                <UnauthenticatedBar />
             )}
         </nav>
     );

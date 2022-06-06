@@ -18,6 +18,7 @@
         "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint .",
         "migrate": "prisma migrate dev",
         "setup": "prisma migrate dev && prisma db seed",
+        "prisma": "prisma",
         "start": "cross-env NODE_ENV=production ts-node --transpileOnly server/index.js",
         "start:mocks": "node --require ./mocks server/index.js",
         "test": "vitest",
