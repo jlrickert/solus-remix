@@ -15,6 +15,7 @@ import {
     Outlet,
     Scripts,
     ScrollRestoration,
+    useCatch,
 } from "@remix-run/react";
 import { Provider as ReduxProvider } from "react-redux";
 
@@ -25,9 +26,9 @@ import * as SessionRepo from "~/Session.server";
 import * as AppStore from "~/Store";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 import * as ProfileApi from "~/features/profile/ProfileRepo.server";
-import { useOptionalProfile } from "~/Utils";
-
 import { profileApi } from "./features/profile/ProfileSlice";
+import { Layout } from "./components/Layout";
+import { MainNavBar } from "./components/NavBar";
 
 export const links: LinksFunction = () => {
     return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
@@ -78,6 +79,26 @@ export const loader: LoaderFunction = async ({ request }) => {
 //         </html>
 //     );
 // }
+export function CatchBoundary() {
+    const caught = useCatch();
+    return (
+        <html className="h-full">
+            <head>
+                <title>Oops!</title>
+                <Meta />
+                <Links />
+            </head>
+            <body className="h-full">
+                <Layout navElement={<MainNavBar />}>
+                    <h1 className="text-zinc-100">
+                        {caught.status} {caught.statusText}
+                    </h1>
+                </Layout>
+                <Scripts />
+            </body>
+        </html>
+    );
+}
 
 export default function App() {
     React.useEffect(() => {

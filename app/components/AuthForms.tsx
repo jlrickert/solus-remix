@@ -146,7 +146,13 @@ export type LogoutFormProps = Readonly<{
 export const LogoutForm: React.FC<LogoutFormProps> = ({ element }) => {
     return (
         <Form action="/logout" method="post">
-            {element ? element : <Button type="submit">Log out</Button>}
+            {element ? (
+                element
+            ) : (
+                <Button variant="text" type="submit">
+                    Log out
+                </Button>
+            )}
         </Form>
     );
 };

@@ -8,6 +8,8 @@ import type * as Profile from "~/features/profile/Profile";
 import * as Prisma from "~/vendor/Prisma";
 import { requireUser } from "~/Session.server";
 import { useProfile, useUser } from "~/Utils";
+import { Layout } from "~/components/Layout";
+import { MainNavBar } from "~/components/NavBar";
 
 // type LoaderData = Readonly<{
 //     user: UserRepo.User;
@@ -39,8 +41,12 @@ export default function ProfileDetailsPage() {
     const profile = useProfile();
 
     return (
-        <div>
-            <h3 className="text-2xl font-bold">{profile.nickname}</h3>
-        </div>
+        <Layout navElement={<MainNavBar />}>
+            <div>
+                <h3 className="text-2xl font-bold text-yellow-500">
+                    {profile.nickname}
+                </h3>
+            </div>
+        </Layout>
     );
 }
