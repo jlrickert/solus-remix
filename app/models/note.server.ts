@@ -8,71 +8,71 @@ import { convertToTaskEither } from "~/vendor/prisma";
 export { Note };
 
 export function getNote({
-  id,
-  userId,
+	id,
+	userId,
 }: Pick<Note, "id"> & {
-  userId: User["id"];
+	userId: User["id"];
 }): TE.TaskEither<PrismaError, Note | null> {
-  return convertToTaskEither(() => {
-    return prisma.note.findFirst({
-      where: { id, userId },
-    });
-  });
+	return convertToTaskEither(() => {
+		return prisma.note.findFirst({
+			where: { id, userId },
+		});
+	});
 }
 
 export function getNoteListItems({
-  userId,
+	userId,
 }: Readonly<{ userId: User["id"] }>): TE.TaskEither<
-  PrismaError,
-  readonly Pick<Note, "id" | "title">[]
+	PrismaError,
+	readonly Pick<Note, "id" | "title">[]
 > {
-  return pipe(
-    convertToTaskEither(() => {
-      return prisma.note.findMany({
-        where: { userId },
-        select: { id: true, title: true },
-        orderBy: { updatedAt: "desc" },
-      });
-    }),
-    TE.map((a) => [...a])
-  );
+	return pipe(
+		convertToTaskEither(() => {
+			return prisma.note.findMany({
+				where: { userId },
+				select: { id: true, title: true },
+				orderBy: { updatedAt: "desc" },
+			});
+		}),
+		TE.map((a) => [...a])
+	);
 }
 
 export function createNote({
-  body,
-  title,
-  userId,
+	body,
+	title,
+	userId,
 }: Pick<Note, "body" | "title"> & {
-  userId: User["id"];
+	userId: User["id"];
 }): TE.TaskEither<PrismaError, Note> {
-  return convertToTaskEither(() => {
-    return prisma.note.create({
-      data: {
-        title,
-        body,
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-      },
-    });
-  });
+	return convertToTaskEither(() => {
+		return prisma.note.create({
+			data: {
+				title,
+				body,
+				user: {
+					connect: {
+						id: userId,
+					},
+				},
+			},
+		});
+	});
 }
 
 export function deleteNote({
-  id,
-  userId,
+	id,
+	userId,
 }: Pick<Note, "id"> & { userId: User["id"] }): TE.TaskEither<
-  PrismaError,
-  number
+	PrismaError,
+	number
 > {
-  return pipe(
-    convertToTaskEither(() =>
-      prisma.note.deleteMany({
-        where: { id, userId },
-      })
-    ),
-    TE.map((a) => a.count)
-  );
+	return pipe(
+		convertToTaskEither(() =>
+			prisma.note.deleteMany({
+				where: { id, userId },
+			})
+		),
+		TE.map((a) => a.count)
+	);
 }
