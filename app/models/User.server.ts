@@ -83,9 +83,17 @@ export function userCount(): TE.TaskEither<Prisma.PrismaError, number> {
 export function deleteUserByEmail(
     email: User["email"]
 ): TE.TaskEither<Prisma.PrismaError, User> {
-    return Prisma.convertToTaskEither(() =>
-        db.user.delete({ where: { email } })
-    );
+    return Prisma.convertToTaskEither(async () => {
+        return db.user.delete({ where: { email } });
+    });
+}
+
+export function deleteAllTestUsers(): TE.TaskEither<Prisma.PrismaError, void> {
+    return Prisma.convertToTaskEither(async () => {
+        await db.user.deleteMany({
+            where: { email: { contains: "@example.com" } },
+        });
+    });
 }
 
 export function verifyLogin(

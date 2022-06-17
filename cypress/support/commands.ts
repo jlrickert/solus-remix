@@ -11,7 +11,7 @@ declare global {
              * @example
              *    cy.login()
              * @example
-             *    cy.login({ email: 'whatever@example.com' })
+             *    cy.login({ email: 'whatever@example.com', nickname: 'whatever' })
              */
             login: typeof login;
 
@@ -26,15 +26,31 @@ declare global {
              *    cy.cleanupUser({ email: 'whatever@example.com' })
              */
             cleanupUser: typeof cleanupUser;
+
+            /**
+             * Deletes all test users with "@example.com" in the name
+             *
+             * @returns {typeof cleanupUser}
+             * @memberof Chainable
+             * @example
+             *    cy.cleanupUser()
+             * @example
+             *    cy.cleanupUser({ email: 'whatever@example.com' })
+             */
+            cleanupTestUserList: typeof cleanupTestUserList;
         }
     }
 }
 
-function login({
-    email = faker.internet.email(undefined, undefined, "example.com"),
-}: {
-    email?: string;
-} = {}) {
+function login(
+    input: Readonly<{
+        email?: string;
+        nickname?: string;
+    }> = {}
+) {
+    const nickname = input.nickname ?? faker.name.firstName();
+    const email =
+        input.email ?? faker.internet.email(nickname, undefined, "example.com");
     cy.then(() => ({ email })).as("user");
     cy.exec(
         `npx ts-node --require tsconfig-paths/register ./cypress/support/create-user.ts "${email}"`
@@ -48,6 +64,12 @@ function login({
         cy.setCookie("__session", cookieValue);
     });
     return cy.get("@user");
+}
+
+function cleanupTestUserList() {
+    cy.exec(
+        `npx ts-node --require tsconfig-paths/register ./cypress/support/delete-test-user-list.ts`
+    );
 }
 
 function cleanupUser({ email }: { email?: string } = {}) {
@@ -73,6 +95,7 @@ function deleteUserByEmail(email: string) {
 
 Cypress.Commands.add("login", login);
 Cypress.Commands.add("cleanupUser", cleanupUser);
+Cypress.Commands.add("cleanupTestUserList", cleanupTestUserList);
 
 /*
 eslint
